@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Loader } from '../components/Loader';
 import { getPeople } from '../api';
 import { Person } from '../types';
@@ -10,13 +10,18 @@ export const PeoplePage: React.FC = () => {
   const [people, setPeople] = useState<Person[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
-  const timerId = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
-    if (timerId.current) {
-      window.clearTimeout(timerId.current);
+    if (errorMessage) {
+      const timerId = setTimeout(() => {
+        setErrorMessage('');
+      }, 3000);
+
+      return () => {
+        clearTimeout(timerId);
+      };
     }
-  }, []);
+  }, [errorMessage]);
 
   useEffect(() => {
     getPeople()
@@ -25,9 +30,6 @@ export const PeoplePage: React.FC = () => {
       })
       .catch(() => {
         setErrorMessage(Errors.General);
-        timerId.current = setTimeout(() => {
-          setErrorMessage('');
-        }, 3000);
       })
       .finally(() => {
         setIsLoading(false);
